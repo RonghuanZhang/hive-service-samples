@@ -31,3 +31,18 @@ curl -X POST http://localhost:8080/decrypt \
 ```
 
 > Replace `ENCRYPTED_TEXT` with the actual ciphertext returned from the encryption API.
+
+## Weather API
+- Endpoint: `GET /weather`
+- Request Parameters (Query):
+  - `latitude`: Latitude of the location (required)
+  - `longitude`: Longitude of the location (required)
+- Response Parameters (JSON):
+  - Returns weather data from Open-Meteo API, including:
+    - `current`: Current temperature (`current`)
+    - `hourly`: Hourly temperature (`hourly`)
+
+### Example curl command
+```sh
+curl -X GET "http://localhost:8080/weather?latitude=52.52&longitude=13.41"
+```
