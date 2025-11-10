@@ -6,7 +6,9 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -96,6 +98,32 @@ func main() {
 			return
 		}
 		c.Next()
+	})
+
+	r.GET("/weather", func(c *gin.Context) {
+		latitude := c.Query("latitude")
+		longitude := c.Query("longitude")
+		if latitude == "" || longitude == "" {
+			c.JSON(400, gin.H{"error": "latitude and longitude are required"})
+			return
+		}
+		apiUrl := fmt.Sprintf("https://api.open-meteo.com/v1/forecast?latitude=%s&longitude=%s&current=temperature_2m,wind_speed_10m&hourly=temperature_2m,relative_humidity_2m,wind_speed_10m", latitude, longitude)
+		resp, err := http.Get(apiUrl)
+		if err != nil {
+			c.JSON(500, gin.H{"error": "failed to fetch weather data"})
+			return
+		}
+		defer resp.Body.Close()
+		if resp.StatusCode != 200 {
+			c.JSON(resp.StatusCode, gin.H{"error": "weather API returned error"})
+			return
+		}
+		var result map[string]interface{}
+		if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+			c.JSON(500, gin.H{"error": "failed to parse weather data"})
+			return
+		}
+		c.JSON(200, result)
 	})
 
 	r.GET("/host", func(c *gin.Context) {
